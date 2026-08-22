@@ -1,0 +1,10 @@
+[package]
+name = "whatpe-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Command-line PE build-metadata viewer."
+
+[dependencies]
+whatpe-core = { path = "../whatpe-core" }

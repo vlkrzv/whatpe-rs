@@ -1,0 +1,12 @@
+[package]
+name = "whatpe-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "PE (Portable Executable) parsing and build-metadata extraction. No OS dependency."
+
+[lib]
+name = "whatpe_core"
+
+[dependencies]
