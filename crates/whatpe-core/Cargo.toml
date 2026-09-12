@@ -10,3 +10,6 @@ description = "PE (Portable Executable) parsing and build-metadata extraction. N
 name = "whatpe_core"
 
 [dependencies]
+goblin = "0.10"
+thiserror = "2"
+chrono = "0.4"
