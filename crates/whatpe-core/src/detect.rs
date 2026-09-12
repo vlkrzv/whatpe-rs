@@ -1,8 +1,8 @@
+use goblin::pe::PE;
 use goblin::pe::clr::{
     COMIMAGE_FLAGS_32BITPREFERRED, COMIMAGE_FLAGS_32BITREQUIRED, COMIMAGE_FLAGS_ILONLY,
 };
 use goblin::pe::optional_header::OptionalHeader;
-use goblin::pe::PE;
 
 use crate::{Category, Item};
 

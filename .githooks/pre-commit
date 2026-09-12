@@ -1,0 +1,11 @@
+#!/bin/sh
+# Mirrors the fast checks from .github/workflows/ci.yml so formatting/lint
+# issues are caught before they leave the machine, not after a CI round-trip.
+# Skip deliberately with `git commit --no-verify` for WIP commits.
+set -e
+
+echo "pre-commit: cargo fmt --check"
+cargo fmt --all -- --check
+
+echo "pre-commit: cargo clippy"
+cargo clippy --workspace --all-targets -- -D warnings
