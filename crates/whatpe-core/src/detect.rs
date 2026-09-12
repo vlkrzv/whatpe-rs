@@ -51,7 +51,7 @@ fn subsystem_name(subsystem: u16) -> &'static str {
         IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER => "EFI Runtime Driver",
         IMAGE_SUBSYSTEM_EFI_ROM => "EFI ROM",
         IMAGE_SUBSYSTEM_XBOX => "XBOX",
-        IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION => "Windows BOOT APPLICATION",
+        IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION => "Windows Boot Application",
         IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG => "XBOX Code Catalog",
         _ => "Unknown",
     }
@@ -127,7 +127,7 @@ fn build_time(pe: &PE) -> String {
     let timestamp = pe.header.coff_header.time_date_stamp as i64;
     match chrono::DateTime::from_timestamp(timestamp, 0) {
         Some(date_time) => date_time.format("%Y-%m-%d %H:%M:%S UTC").to_string(),
-        None => "INVALID".to_string(),
+        None => "Invalid timestamp".to_string(),
     }
 }
 
@@ -175,7 +175,7 @@ fn toolset(pe: &PE, optional_header: &OptionalHeader) -> Item {
             0x0600 => "Visual Studio 6.0",
             0x0500 => "Visual Studio 5.0",
             0x3000 => "Visual Studio C#",
-            _ => "(Unknown)",
+            _ => "Unknown",
         }
     };
 
