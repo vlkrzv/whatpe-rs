@@ -1,37 +1,30 @@
 use goblin::pe::PE;
+use goblin::pe::characteristic::is_dll;
 use goblin::pe::clr::{
     COMIMAGE_FLAGS_32BITPREFERRED, COMIMAGE_FLAGS_32BITREQUIRED, COMIMAGE_FLAGS_ILONLY,
 };
+use goblin::pe::dll_characteristic::{
+    IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE, IMAGE_DLLCHARACTERISTICS_GUARD_CF,
+    IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA, IMAGE_DLLCHARACTERISTICS_NX_COMPAT,
+};
+use goblin::pe::header::{
+    COFF_MACHINE_ARM, COFF_MACHINE_ARM64, COFF_MACHINE_ARMNT, COFF_MACHINE_IA64, COFF_MACHINE_X86,
+    COFF_MACHINE_X86_64,
+};
 use goblin::pe::optional_header::OptionalHeader;
+use goblin::pe::subsystem::{
+    IMAGE_SUBSYSTEM_EFI_APPLICATION, IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER,
+    IMAGE_SUBSYSTEM_EFI_ROM, IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER, IMAGE_SUBSYSTEM_NATIVE,
+    IMAGE_SUBSYSTEM_NATIVE_WINDOWS, IMAGE_SUBSYSTEM_OS2_CUI, IMAGE_SUBSYSTEM_POSIX_CUI,
+    IMAGE_SUBSYSTEM_UNKNOWN, IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION,
+    IMAGE_SUBSYSTEM_WINDOWS_CE_GUI, IMAGE_SUBSYSTEM_WINDOWS_CUI, IMAGE_SUBSYSTEM_WINDOWS_GUI,
+    IMAGE_SUBSYSTEM_XBOX,
+};
 
 use crate::{Category, Item};
 
-const IMAGE_FILE_DLL: u16 = 0x2000;
-
-const IMAGE_SUBSYSTEM_UNKNOWN: u16 = 0;
-const IMAGE_SUBSYSTEM_NATIVE: u16 = 1;
-const IMAGE_SUBSYSTEM_WINDOWS_GUI: u16 = 2;
-const IMAGE_SUBSYSTEM_WINDOWS_CUI: u16 = 3;
-const IMAGE_SUBSYSTEM_OS2_CUI: u16 = 5;
-const IMAGE_SUBSYSTEM_POSIX_CUI: u16 = 7;
-const IMAGE_SUBSYSTEM_NATIVE_WINDOWS: u16 = 8;
-const IMAGE_SUBSYSTEM_WINDOWS_CE_GUI: u16 = 9;
-const IMAGE_SUBSYSTEM_EFI_APPLICATION: u16 = 10;
-const IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER: u16 = 11;
-const IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER: u16 = 12;
-const IMAGE_SUBSYSTEM_EFI_ROM: u16 = 13;
-const IMAGE_SUBSYSTEM_XBOX: u16 = 14;
-const IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION: u16 = 16;
+/// Not defined in `goblin::pe::subsystem`.
 const IMAGE_SUBSYSTEM_XBOX_CODE_CATALOG: u16 = 17;
-
-const IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA: u16 = 0x0020;
-const IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE: u16 = 0x0040;
-const IMAGE_DLLCHARACTERISTICS_NX_COMPAT: u16 = 0x0100;
-const IMAGE_DLLCHARACTERISTICS_GUARD_CF: u16 = 0x4000;
-
-fn is_dll(pe: &PE) -> bool {
-    pe.header.coff_header.characteristics & IMAGE_FILE_DLL != 0
-}
 
 /// Deterministic builds (`/deterministic`, the .NET SDK's Roslyn default) replace the PE
 /// TimeDateStamp with a hash of the file's own content, and the linker-version fields aren't
@@ -66,35 +59,12 @@ fn subsystem_name(subsystem: u16) -> &'static str {
 
 fn machine_name(machine: u16) -> &'static str {
     match machine {
-        0x014c => "i386",
-        0x8664 => "AMD64",
-        0x0200 => "IA-64",
-        0x0162 => "MIPS R3000",
-        0x0166 => "MIPS R4000",
-        0x0168 => "MIPS R10000",
-        0x0169 => "MIPS WCE v2",
-        0x0184 => "DEC Alpha / Alpha AXP",
-        0x01a2 => "SH3",
-        0x01a3 => "SH3DSP",
-        0x01a4 => "SH3E",
-        0x01a6 => "SH4",
-        0x01a8 => "SH5",
-        0x01c0 => "ARM",
-        0x01c2 => "ARM Thumb/Thumb-2",
-        0x01c4 => "ARM Thumb-2",
-        0xaa64 => "ARM64",
-        0x01d3 => "AM33",
-        0x01f0 => "POWERPC",
-        0x01f1 => "POWERPCFP",
-        0x0266 => "MIPS16",
-        0x0284 => "ALPHA64",
-        0x0366 => "MIPSFPU",
-        0x0466 => "MIPSFPU16",
-        0x0520 => "TriCore",
-        0x0cef => "CEF",
-        0x0ebc => "EFI Byte Code",
-        0x9041 => "M32R",
-        0xc0ee => "CEE",
+        COFF_MACHINE_X86 => "x86",
+        COFF_MACHINE_X86_64 => "x64",
+        COFF_MACHINE_IA64 => "IA-64",
+        COFF_MACHINE_ARM => "ARM (legacy)",
+        COFF_MACHINE_ARMNT => "ARM32",
+        COFF_MACHINE_ARM64 => "ARM64",
         _ => "Unknown",
     }
 }
@@ -107,7 +77,7 @@ fn description(pe: &PE, optional_header: &OptionalHeader) -> String {
     }
 
     if subsystem == IMAGE_SUBSYSTEM_WINDOWS_GUI || subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI {
-        if is_dll(pe) {
+        if is_dll(pe.header.coff_header.characteristics) {
             return "Windows Dynamic-Link Library (DLL)".to_string();
         }
 
